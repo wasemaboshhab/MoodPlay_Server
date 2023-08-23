@@ -12,7 +12,7 @@ def test_deep_face_emotions():
     return jsonify(mod=face_emotion)
 
 
-@app.route('/', methods=['POST'])
+@app.route('/analyze_face', methods=['POST'])
 def analyze_mood():
     if 'image' not in request.files:
         return "No image provided", 400
@@ -25,13 +25,9 @@ def analyze_mood():
     image_path = "images/ronaldo.jpg"  # Temporary image path
     image_file.save(image_path)
 
-    face_analysis = DeepFace.analyze(img_path=image_path)
+    face_analysis = DeepFace.analyze(img_path=image_path, actions=['emotion'])
     face_emotion = face_analysis[0]["dominant_emotion"]
-    print(face_emotion)
-
-    return jsonify({
-        "emotion": face_emotion
-    })
+    return jsonify(mod=face_emotion)
 
 
 if __name__ == '__main__':
