@@ -1,16 +1,22 @@
 from flask import Flask, request, jsonify
 from deepface import DeepFace
-import os
 
 app = Flask(__name__)
 
 
-@app.route('/test')
-def test_deep_face_emotions():
-    image_path = "images/temp_image.jpg"
-    face_analysis = DeepFace.analyze(img_path=image_path, actions=['emotion'])
-    face_emotion = face_analysis[0]["dominant_emotion"]
-    return jsonify(mod=face_emotion)
+def filter_unnecessary_emotion_and_take_close_one(emotion_dictionary):
+    del emotion_dictionary["fear"]
+    del emotion_dictionary["disgust"]
+    second_close_emotion = max(emotion_dictionary, key=emotion_dictionary.get)
+    return second_close_emotion
+
+    # print(second_dominant_emotion)
+    # return jsonify(mod=emotion_dictionary[max_key])
+    # max_value = emotion_dictionary[max_key]
+    # for key, value in emotion_dictionary.items():
+    #     print(f"key: {key} , value: {value}")
+    # print("Key with highest value:", max_key)
+    # print("Highest value:", max_value)
 
 
 @app.route('/', methods=['POST', 'GET'])
@@ -28,16 +34,11 @@ def analyze_mood():
     image_file.save(image_path)
     face_analysis = DeepFace.analyze(img_path=image_path, actions=['emotion'])
     face_emotion = face_analysis[0]["dominant_emotion"]
-    print(face_emotion)
+    if face_emotion == 'fear' or face_emotion == 'disgust':
+        emotion_dictionary = face_emotion[0]['emotion']
+        face_emotion = filter_unnecessary_emotion_and_take_close_one(emotion_dictionary)
+
     return jsonify(mod=face_emotion)
-
-    # if image_file:
-    #     filename = os.path.join(app.config['image'], image_file.filename)
-    #     image_file.save(filename)
-
-
-    # image_path = "images/ronaldo.jpg"  # Temporary image path
-    # image_file.save(image_path)
 
 
 if __name__ == '__main__':
